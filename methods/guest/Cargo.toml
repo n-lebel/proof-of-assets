@@ -13,3 +13,4 @@ risc0-zkvm = { git = "https://github.com/risc0/risc0.git", rev = "845ff76", defa
 proof-core = { path = "../../proof-core" }
 eth_trie = { git = "https://github.com/carver/eth-trie.rs.git" }
 primitive-types = { version = "0.12.1", default-features = false }
+rlp = "0.5.2"

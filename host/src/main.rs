@@ -1,10 +1,135 @@
+#[macro_use]
+extern crate dotenv_codegen;
+
 use methods::{ MPT_PROOF_ID, MPT_PROOF_ELF };
-use proof_core::ProofInput;
-use risc0_zkvm::{ Prover, serde::to_vec, Receipt };
+use proof_core::{ ProofInput, ProofOutput, EthGetProofBody, EthGetBlockBody };
+use risc0_zkvm::{ Prover, Receipt, serde::to_vec, serde::from_slice };
 use prefix_hex::decode;
 use sha3::{ Keccak256, Digest };
+use serde::{ Deserialize, Serialize };
+use serde_json::{ json, Value, Map };
+use ureq;
 
 fn main() {
+    let address = "0x904a81b8945803bacbb6c75ab4c956b173975954";
+
+    println!("Requesting latest account proof for {}", address);
+    let proof_body = get_input(dotenv!("ETHEREUM_PROVIDER"), address, "latest").unwrap();
+    println!("Response: {:x?}", proof_body);
+
+    println!("Generating STARK verifying Merkle proof...");
+    let receipt = run_prover(proof_body);
+
+    // Extract journal of receipt
+    let output: ProofOutput = from_slice(&receipt.journal).unwrap();
+
+    println!("STARK receipt successfully verified with output: {:x?}", output);
+}
+
+fn run_prover(request: ProofInput) -> Receipt {
+    let mut prover = Prover::new(MPT_PROOF_ELF, MPT_PROOF_ID).expect(
+        "Prover should be constructed from valid method source code and corresponding image ID"
+    );
+
+    // Next we send input to the guest
+    prover.add_input_u32_slice(to_vec(&request).expect("Input should be serializable").as_slice());
+
+    let receipt = prover
+        .run()
+        .expect(
+            "Code should be provable unless it had an error or overflowed the maximum cycle count"
+        );
+
+    receipt
+}
+
+fn get_input(provider: &str, address: &str, block_number: &str) -> Result<ProofInput, ureq::Error> {
+    let block_response = get_block_by_number(provider, block_number).unwrap();
+    // for the proof block number, we pass whatever block the previous described to make sure
+    // they are the same (e.g. if "latest" was used there could be a discrepancy)
+    let proof_response = get_proof(provider, address, &block_response.number).unwrap();
+
+    let result = ProofInput {
+        root: block_response.state_root,
+        account_proof: proof_response.account_proof,
+        key: sha3::Keccak256::digest(proof_response.address).into(),
+        expected_balance: 0,
+    };
+
+    Ok(result)
+}
+
+fn get_proof(
+    provider: &str,
+    address: &str,
+    block_number: &str
+) -> Result<EthGetProofBody, ureq::Error> {
+    // Create an HTTP client
+    let agent = ureq::agent();
+
+    // eth_getProof POST request to the JSON-RPC provider, with the same block number
+    let proof_response: Value = agent
+        .post(provider)
+        .send_json(
+            ureq::json!(
+                ureq::json!({
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "eth_getProof",
+                    "params": [address,
+                        [],
+                        block_number],
+                })
+            )
+        )?
+        .into_json()?;
+    // Parse response as object
+    let proof_response = proof_response["result"].as_object().unwrap();
+
+    // Parse accountProof field to Vec<Vec<u8>>
+    let account_proof_json = proof_response["accountProof"].as_array().unwrap();
+    let account_proof = account_proof_json
+        .iter()
+        .map(|hex_string| decode(hex_string.as_str().unwrap()).unwrap())
+        .collect::<Vec<Vec<u8>>>();
+
+    // Parse address field as [u8; 20]
+    let address = decode(&proof_response["address"].as_str().unwrap().to_owned()).unwrap();
+
+    let proof_info = EthGetProofBody {
+        address,
+        account_proof,
+    };
+
+    Ok(proof_info)
+}
+
+fn get_block_by_number(provider: &str, block_number: &str) -> Result<EthGetBlockBody, ureq::Error> {
+    // Create an HTTP client
+    let agent = ureq::agent();
+
+    // eth_getBlockByNumber POST request to the JSON-RPC provider
+    let block_response: Value = agent
+        .post(provider)
+        .send_json(
+            ureq::json!(    {"jsonrpc": "2.0",
+           "id": 1,
+           "method": "eth_getBlockByNumber",
+           "params": [block_number, false]}
+       )
+        )?
+        .into_json()?;
+    // Parse response as object
+    let block_response = block_response["result"].as_object().unwrap();
+    let block_info = EthGetBlockBody {
+        number: block_response["number"].as_str().unwrap().to_owned(),
+        state_root: decode(&block_response["stateRoot"].as_str().unwrap().to_owned()).unwrap(),
+    };
+
+    Ok(block_info)
+}
+
+fn example_input() -> ProofInput {
     let root: [u8; 32] = decode(
         "0xf1428e97d77482a33d8a4e829c1b3aef8d7df63da7a6ce20aa3b32613099e8cb"
     ).unwrap();
@@ -34,16 +159,5 @@ fn main() {
         expected_balance: 100,
     };
 
-    let mut prover = Prover::new(MPT_PROOF_ELF, MPT_PROOF_ID).expect(
-        "Prover should be constructed from valid method source code and corresponding image ID"
-    );
-
-    // Next we send input to the guest
-    prover.add_input_u32_slice(to_vec(&request).expect("Input should be serializable").as_slice());
-
-    let receipt = prover
-        .run()
-        .expect(
-            "Code should be provable unless it had an error or overflowed the maximum cycle count"
-        );
+    request
 }
