@@ -1,12 +1,14 @@
 use methods::{ MPT_PROOF_ID, MPT_PROOF_ELF };
 use proof_core::{ ProofInput, ProofOutput, EthGetProofBody, EthGetBlockBody };
+use risc0_zkvm::{ Prover, Receipt, serde::to_vec, serde::from_slice };
 use prefix_hex::decode;
 use sha3::{ Keccak256, Digest };
+
 use serde::{ Deserialize, Serialize };
 use serde_json::{ json, Value, Map };
-use risc0_zkvm::{ Prover, Receipt, serde::to_vec, serde::from_slice };
-
-use ureq;
+use ureq::{ agent, Error };
+use std::fs::File;
+use std::io::prelude::*;
 
 pub fn run_prover(request: ProofInput) -> Receipt {
     let mut prover = Prover::new(MPT_PROOF_ELF, MPT_PROOF_ID).expect(
@@ -23,6 +25,15 @@ pub fn run_prover(request: ProofInput) -> Receipt {
         );
 
     receipt
+}
+
+pub fn write_file(receipt: Receipt, path: &str) -> std::io::Result<()> {
+    let json_str = serde_json::to_string(&receipt)?;
+
+    let mut file = File::create(path)?;
+    file.write_all(json_str.as_bytes())?;
+
+    Ok(())
 }
 
 pub fn get_input(
@@ -51,7 +62,7 @@ fn get_proof(
     block_number: &str
 ) -> Result<EthGetProofBody, ureq::Error> {
     // Create an HTTP client
-    let agent = ureq::agent();
+    let agent = agent();
 
     // eth_getProof POST request to the JSON-RPC provider, with the same block number
     let proof_response: Value = agent
@@ -92,7 +103,7 @@ fn get_proof(
 
 fn get_block_by_number(provider: &str, block_number: &str) -> Result<EthGetBlockBody, ureq::Error> {
     // Create an HTTP client
-    let agent = ureq::agent();
+    let agent = agent();
 
     // eth_getBlockByNumber POST request to the JSON-RPC provider
     let block_response: Value = agent

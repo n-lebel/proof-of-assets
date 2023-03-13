@@ -20,6 +20,7 @@ pub fn main() {
 
     let mut result = decode_ethereum_rlp(result.as_slice()).unwrap();
 
+    // TODO: handle balances larger than u64 (u128 not serde-serializable)
     let balance = u64::from_be_bytes(result.remove(1).try_into().unwrap());
     if balance < input.expected_balance {
         panic!("Account balance is smaller than the expected balance.");
