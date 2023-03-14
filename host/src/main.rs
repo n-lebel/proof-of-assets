@@ -28,6 +28,6 @@ fn main() {
     // Verify receipt seal
     receipt.verify(&MPT_PROOF_ID).expect("Unable to verify receipt.");
 
-    write_file(receipt, "./receipt.json").expect("Failed to write to file.");
-    println!("STARK receipt successfully and committed to: {:x?}", "receipt.json");
+    write_file(receipt, "./target/proofs/receipt.json").expect("Failed to write to file.");
+    println!("STARK receipt successfully and committed to: {:x?}", "./target/proofs/receipt.json");
 }

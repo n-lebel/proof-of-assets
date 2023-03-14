@@ -17,6 +17,8 @@ pub fn main() {
     let input: ProofInput = env::read();
 
     // Verify signed message corresponds to provided address
+    // NOTE: Naive ECDSA verification is extremely costly, should be replaced by accelerated circuit
+    // as soon as those are available for Risc0
     let pubkey = derive_address(&recover_public_key(input.signature, input.message));
     if pubkey != input.account.to_owned() {
         panic!("Signature does not match provided address.");
