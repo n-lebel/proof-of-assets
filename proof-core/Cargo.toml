@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 serde = {version = "1.0.155", features = ["derive"] }
+k256 = { version = "0.11.6", features = ["ecdsa", "ecdsa-core", "keccak256"], default_features = false }
+rlp = "0.5.2"
+sha3 = "0.10.6"

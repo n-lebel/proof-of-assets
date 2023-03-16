@@ -2,8 +2,13 @@
 extern crate dotenv_codegen;
 use methods::{ MPT_PROOF_ID };
 
-mod utils;
-use utils::{ run_prover, get_input, write_file };
+mod prover;
+mod file_utils;
+mod ethereum;
+
+use prover::run_prover;
+use file_utils::write_json;
+use ethereum::rpc::get_input;
 
 fn main() {
     let address = dotenv!("ADDRESS");
@@ -28,6 +33,6 @@ fn main() {
     // Verify receipt seal
     receipt.verify(&MPT_PROOF_ID).expect("Unable to verify receipt.");
 
-    write_file(receipt, "./target/proofs/receipt.json").expect("Failed to write to file.");
+    write_json(&receipt, "./target/proofs").expect("Failed to write to file.");
     println!("STARK receipt successfully and committed to: {:x?}", "./target/proofs/receipt.json");
 }

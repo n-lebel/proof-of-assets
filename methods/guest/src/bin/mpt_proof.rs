@@ -1,15 +1,14 @@
 #![no_main]
 
-use proof_core::{ ProofInput, ProofOutput };
+use proof_core::{
+    ProofInput,
+    ProofOutput,
+    eth_utils::{ decode_ethereum_rlp, recover_public_key, derive_address, be_bytes_geq },
+};
 use risc0_zkvm::guest::env;
 use std::sync::Arc;
 use eth_trie::{ EthTrie, MemoryDB, Trie };
-use rlp::{ DecoderError, Rlp };
 use sha3::{ Keccak256, Digest };
-use k256::{
-    ecdsa::{ recoverable::Signature as r_Signature, VerifyingKey, signature::Signature },
-    elliptic_curve::sec1::ToEncodedPoint,
-};
 
 risc0_zkvm::guest::entry!(main);
 
@@ -18,8 +17,10 @@ pub fn main() {
 
     // Verify signed message corresponds to provided address
     // NOTE: Naive ECDSA verification is extremely costly, should be replaced by accelerated circuit
-    // as soon as those are available for Risc0
-    let pubkey = derive_address(&recover_public_key(input.signature, input.message));
+    // as soon as those are made available for Risc0
+    let pubkey = derive_address(
+        &recover_public_key(input.signature, input.message).unwrap()
+    ).unwrap();
     if pubkey != input.account.to_owned() {
         panic!("Signature does not match provided address.");
     }
@@ -35,28 +36,11 @@ pub fn main() {
 
     let mut result = decode_ethereum_rlp(result.as_slice()).unwrap();
 
-    // TODO: handle balances larger than u64 (u128 not zkvm-serde-serializable)
-    let balance = u64::from_be_bytes(result.remove(1).try_into().unwrap());
-    if balance < input.expected_balance {
+    let balance = result.swap_remove(1);
+    let expected_balance = input.expected_balance.to_be_bytes().to_vec();
+    if be_bytes_geq(expected_balance, balance) {
         panic!("Account balance is smaller than the expected balance.");
     }
 
     env::commit(&(ProofOutput { root: input.root, expected_balance: input.expected_balance }));
-}
-
-fn decode_ethereum_rlp(encoded: &[u8]) -> Result<Vec<Vec<u8>>, DecoderError> {
-    let rlp = Rlp::new(encoded);
-    let decoded: Vec<Vec<u8>> = rlp.as_list()?;
-    Ok(decoded)
-}
-
-fn recover_public_key(sig: Vec<u8>, msg: Vec<u8>) -> VerifyingKey {
-    let signature: r_Signature = r_Signature::from_bytes(&sig).unwrap();
-    signature.recover_verifying_key(&msg).unwrap()
-}
-
-fn derive_address(vk: &VerifyingKey) -> [u8; 20] {
-    let encoded = vk.to_encoded_point(false);
-    let encoded = &encoded.as_bytes()[1..];
-    Keccak256::digest(encoded)[12..].try_into().unwrap()
 }
