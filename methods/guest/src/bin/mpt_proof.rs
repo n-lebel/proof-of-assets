@@ -42,5 +42,11 @@ pub fn main() {
         panic!("Account balance is smaller than the expected balance.");
     }
 
-    env::commit(&(ProofOutput { root: input.root, expected_balance: input.expected_balance }));
+    env::commit(
+        &(ProofOutput {
+            root: input.root,
+            block_hash: input.block_hash,
+            expected_balance: input.expected_balance,
+        })
+    );
 }

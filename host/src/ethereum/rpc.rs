@@ -56,7 +56,6 @@ impl EthereumRpcClient {
             )?
             .into_json()?;
         // Parse response as object
-        // Parse response as object
         let proof_response = result["result"].as_object().unwrap();
 
         // Parse accountProof field to Vec<Vec<u8>>
@@ -93,6 +92,7 @@ pub fn get_input(
 
     let result = ProofInput {
         root: block_response.state_root,
+        block_hash: decode(&block_response.number).unwrap(),
         account_proof: proof_response.account_proof,
         account: decode(address).unwrap(),
         expected_balance: 0,

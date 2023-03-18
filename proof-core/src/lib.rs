@@ -7,6 +7,8 @@ pub struct ProofInput {
     pub account: [u8; 20],
     // Ethereum account trie root
     pub root: [u8; 32],
+    // Ethereum block hash
+    pub block_hash: [u8; 32],
     // Merkle Patricia trie proof for provided account
     pub account_proof: Vec<Vec<u8>>,
     // to prove that the account's balance is larger than some predefined number
@@ -20,4 +22,5 @@ pub struct ProofInput {
 pub struct ProofOutput {
     pub root: [u8; 32],
     pub expected_balance: u64,
+    pub block_hash: [u8; 32],
 }
