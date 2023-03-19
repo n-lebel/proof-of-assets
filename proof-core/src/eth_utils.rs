@@ -22,6 +22,7 @@ pub struct StorageProof {
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct EthGetBlockBody {
     pub number: String,
+    pub block_hash: [u8; 32],
     pub state_root: [u8; 32],
 }
 
