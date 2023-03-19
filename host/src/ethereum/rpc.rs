@@ -29,10 +29,13 @@ impl EthereumRpcClient {
             )?
             .into_json()?;
         // Parse response as object
-        let block_response = result["result"].as_object().unwrap();
+        let block_response = result["result"]
+            .as_object()
+            .expect("eth_getBlockByNumber call failed");
         let block_info = EthGetBlockBody {
             number: block_response["number"].as_str().unwrap().to_owned(),
             state_root: decode(&block_response["stateRoot"].as_str().unwrap().to_owned()).unwrap(),
+            block_hash: decode(&block_response["hash"].as_str().unwrap().to_owned()).unwrap(),
         };
 
         Ok(block_info)
@@ -56,7 +59,7 @@ impl EthereumRpcClient {
             )?
             .into_json()?;
         // Parse response as object
-        let proof_response = result["result"].as_object().unwrap();
+        let proof_response = result["result"].as_object().expect("eth_getProof call failed");
 
         // Parse accountProof field to Vec<Vec<u8>>
         let account_proof_json = proof_response["accountProof"].as_array().unwrap();
@@ -92,12 +95,12 @@ pub fn get_input(
 
     let result = ProofInput {
         root: block_response.state_root,
-        block_hash: decode(&block_response.number).unwrap(),
+        block_hash: block_response.block_hash,
         account_proof: proof_response.account_proof,
         account: decode(address).unwrap(),
         expected_balance: 0,
         signature: decode(signature).unwrap(),
-        message: decode(message).unwrap(),
+        message: message.as_bytes().to_vec(),
     };
 
     Ok(result)
