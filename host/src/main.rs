@@ -1,13 +1,13 @@
-use methods::{ MPT_PROOF_ID };
 use dotenv;
+use methods::{ NATIVE_PROOF_ID, ERC20_PROOF_ID };
 
-mod prover;
-mod file_utils;
 mod ethereum;
+mod file_utils;
+mod prover;
 
-use prover::{ run_prover, check_signature };
+use ethereum::rpc::{ get_native_input, get_contract_input };
 use file_utils::write_json;
-use ethereum::rpc::get_input;
+use prover::{ check_signature, run_native_prover, run_contract_prover };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load variables in .env
@@ -22,23 +22,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let block_number = dotenv::var("BLOCK_NUMBER").unwrap_or("latest".to_string());
 
     // Check that the provided signature matches the account before running the costly proving algorithm
-    assert!(check_signature(&signature, &message, &address).unwrap());
-    println!("Signature corresponds to address {}", &address);
+    // assert!(check_signature(&signature, &message, &address).unwrap());
+    // println!("Signature corresponds to address {}", &address);
 
     println!("Requesting latest account proof for {}", address);
     // get_input queries the ETHEREUM_PROVIDER over HTTP for a state root and account proof for "address"
-    let proof_body = get_input(&provider, &address, &block_number, &signature, &message).unwrap();
+    let proof_body = get_contract_input(
+        &provider,
+        &address,
+        &block_number,
+        &signature,
+        &message,
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "0x0000000000000000000000000000000000000000000000000000000000000009"
+    ).unwrap();
     println!("Response successfully received.");
 
     println!("Generating STARK verifying Merkle proof...");
     // run_prover runs the verification of the Merkle Patricia proof within the zkVM
-    let receipt = run_prover(proof_body);
+    let receipt = run_contract_prover(proof_body);
 
     // Verify receipt seal
-    receipt.verify(&MPT_PROOF_ID).expect("Unable to verify receipt.");
+    receipt.verify(&ERC20_PROOF_ID).expect("Unable to verify receipt.");
 
     write_json(&receipt, "./target/proofs").expect("Failed to write to file.");
-    println!("STARK receipt successfully and committed to: {:x?}", "./target/proofs/receipt.json");
+    println!(
+        "STARK receipt successfully produced and committed to: {:x?}",
+        "./target/proofs/receipt.json"
+    );
 
     Ok(())
 }
