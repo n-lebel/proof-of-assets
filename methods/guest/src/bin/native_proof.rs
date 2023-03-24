@@ -1,9 +1,9 @@
 #![no_main]
 
 use proof_core::{
-    ProofInput,
-    ProofOutput,
-    eth_utils::{ decode_ethereum_rlp, recover_public_key, derive_address, be_bytes_geq },
+    NativeProofInput,
+    NativeProofOutput,
+    eth_utils::{ decode_ethereum_rlp, recover_public_key, derive_address, vec_be_bytes_geq },
 };
 use risc0_zkvm::guest::env;
 use std::sync::Arc;
@@ -13,13 +13,13 @@ use sha3::{ Keccak256, Digest };
 risc0_zkvm::guest::entry!(main);
 
 pub fn main() {
-    let input: ProofInput = env::read();
+    let input: NativeProofInput = env::read();
 
     // Verify signed message corresponds to provided address
     // NOTE: Naive ECDSA verification is extremely costly, should be replaced by accelerated circuit
     // as soon as those are made available for Risc0
     let pubkey = derive_address(
-        &recover_public_key(input.signature, input.message).unwrap()
+        &recover_public_key(&input.signature, &input.message).unwrap()
     ).unwrap();
     if pubkey != input.account.to_owned() {
         panic!("Signature does not match provided address.");
@@ -38,12 +38,12 @@ pub fn main() {
 
     let balance = result.swap_remove(1);
     let expected_balance = input.expected_balance.to_be_bytes().to_vec();
-    if be_bytes_geq(expected_balance, balance) {
+    if vec_be_bytes_geq(&expected_balance, &balance) {
         panic!("Account balance is smaller than the expected balance.");
     }
 
     env::commit(
-        &(ProofOutput {
+        &(NativeProofOutput {
             root: input.root,
             block_hash: input.block_hash,
             expected_balance: input.expected_balance,
