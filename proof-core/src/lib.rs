@@ -1,5 +1,5 @@
 pub mod eth_utils;
-use serde::{ Deserialize, Serialize };
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct NativeProofInput {

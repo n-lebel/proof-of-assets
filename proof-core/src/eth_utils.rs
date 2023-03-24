@@ -35,6 +35,10 @@ pub fn decode_ethereum_rlp(encoded: &[u8]) -> Result<Vec<Vec<u8>>, DecoderError>
     Ok(decoded)
 }
 
+pub fn format_eth_message(message: String) -> String {
+    format!("{}{}{}", "\x19Ethereum Signed Message:\n", message.len(), message)
+}
+
 pub fn recover_public_key(
     sig: &Vec<u8>,
     msg: &Vec<u8>
