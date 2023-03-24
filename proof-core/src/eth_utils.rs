@@ -1,10 +1,10 @@
 use k256::{
-    ecdsa::{ recoverable::Signature, signature::Signature as _, VerifyingKey },
+    ecdsa::{recoverable::Signature, signature::Signature as _, VerifyingKey},
     elliptic_curve::sec1::ToEncodedPoint,
 };
-use rlp::{ DecoderError, Rlp };
-use serde::{ Deserialize, Serialize };
-use sha3::{ Digest, Keccak256 };
+use rlp::{DecoderError, Rlp};
+use serde::{Deserialize, Serialize};
+use sha3::{Digest, Keccak256};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct EthGetProofBody {
@@ -37,7 +37,7 @@ pub fn decode_ethereum_rlp(encoded: &[u8]) -> Result<Vec<Vec<u8>>, DecoderError>
 
 pub fn recover_public_key(
     sig: &Vec<u8>,
-    msg: &Vec<u8>
+    msg: &Vec<u8>,
 ) -> Result<VerifyingKey, k256::ecdsa::Error> {
     let signature = Signature::from_bytes(&sig)?;
     Ok(signature.recover_verifying_key(&msg)?)

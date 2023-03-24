@@ -1,14 +1,14 @@
 use prefix_hex::{ decode, encode };
 use proof_core::{
     eth_utils::{ EthGetBlockBody, EthGetProofBody },
-    NativeProofInput,
     ContractProofInput,
+    NativeProofInput,
 };
 
-use sha3::{ Keccak256, Digest };
-use serde_json::Value;
-use ureq::{ agent, Agent };
 use concat_arrays::concat_arrays;
+use serde_json::Value;
+use sha3::{ Digest, Keccak256 };
+use ureq::{ agent, Agent };
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -76,7 +76,6 @@ impl EthereumRpcClient {
             .into_json()?;
         // Parse response as object
         let proof_response = result["result"].as_object().expect("eth_getProof call failed");
-        println!("{}", block_number);
 
         // Parse accountProof field to Vec<Vec<u8>>
         let account_proof_json = proof_response["accountProof"].as_array().unwrap();
@@ -91,7 +90,6 @@ impl EthereumRpcClient {
             .iter()
             .map(|hex_string| decode(hex_string.as_str().unwrap()).unwrap())
             .collect::<Vec<Vec<u8>>>();
-        println!("{:x?}", storage_proof);
 
         // Parse storageHash field as [u8; 32]
         let storage_hash: [u8; 32] = decode(
@@ -170,8 +168,6 @@ pub fn get_contract_input(
         signature: decode(signature).unwrap(),
         message: message.as_bytes().to_vec(),
     };
-
-    println!("{:x?}", result);
 
     Ok(result)
 }

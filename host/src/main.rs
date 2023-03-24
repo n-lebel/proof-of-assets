@@ -1,13 +1,13 @@
 use dotenv;
-use methods::{ NATIVE_PROOF_ID, ERC20_PROOF_ID };
+use methods::{ ERC20_PROOF_ID, NATIVE_PROOF_ID };
 
 mod ethereum;
 mod file_utils;
 mod prover;
 
-use ethereum::rpc::{ get_native_input, get_contract_input };
+use ethereum::rpc::{ get_contract_input, get_native_input };
 use file_utils::write_json;
-use prover::{ check_signature, run_native_prover, run_contract_prover };
+use prover::{ check_signature, run_contract_prover, run_native_prover };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load variables in .env
@@ -22,8 +22,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let block_number = dotenv::var("BLOCK_NUMBER").unwrap_or("latest".to_string());
 
     // Check that the provided signature matches the account before running the costly proving algorithm
-    // assert!(check_signature(&signature, &message, &address).unwrap());
-    // println!("Signature corresponds to address {}", &address);
+    assert!(check_signature(&signature, &message, &address).unwrap());
+    println!("Signature corresponds to address {}", &address);
 
     println!("Requesting latest account proof for {}", address);
     // get_input queries the ETHEREUM_PROVIDER over HTTP for a state root and account proof for "address"
