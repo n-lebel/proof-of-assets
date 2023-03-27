@@ -44,7 +44,7 @@ pub fn main() {
         .unwrap();
 
     let expected_balance = input.expected_balance.to_be_bytes();
-    if be_bytes_geq(&expected_balance, &balance) {
+    if be_bytes_geq(&balance, &expected_balance) {
         panic!("Account balance is smaller than the expected balance.");
     }
 

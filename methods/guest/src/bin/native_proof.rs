@@ -36,9 +36,10 @@ pub fn main() {
 
     let mut result = decode_ethereum_rlp(result.as_slice()).unwrap();
 
+    // balance is second element in the returned array
     let balance = result.swap_remove(1);
     let expected_balance = input.expected_balance.to_be_bytes().to_vec();
-    if vec_be_bytes_geq(&expected_balance, &balance) {
+    if vec_be_bytes_geq(&balance, &expected_balance) {
         panic!("Account balance is smaller than the expected balance.");
     }
 
@@ -47,6 +48,7 @@ pub fn main() {
             root: input.root,
             block_hash: input.block_hash,
             expected_balance: input.expected_balance,
+            message: input.message,
         })
     );
 }

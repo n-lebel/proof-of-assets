@@ -1,6 +1,7 @@
 use serde::Serialize;
 use serde_json::{ Value, Error };
-use proof_core::eth_utils::{ ContractRequest, NativeRequest, format_eth_message };
+use proof_core::eth_utils::{ format_eth_message };
+use crate::ethereum::requests::{ ContractRequest, NativeRequest };
 
 use std::fs::{ create_dir_all, File };
 use std::io::{ Read, Write };
@@ -32,6 +33,7 @@ pub fn parse_json_native(filename: &str) -> Result<NativeRequest, Error> {
     let block_number = String::from(data["block_number"].as_str().unwrap());
     let signature = String::from(data["signature"].as_str().unwrap());
     let message = format_eth_message(String::from(data["message"].as_str().unwrap()));
+    let expected_balance = data["expected_balance"].as_u64().unwrap();
 
     Ok(NativeRequest {
         provider,
@@ -39,6 +41,7 @@ pub fn parse_json_native(filename: &str) -> Result<NativeRequest, Error> {
         block_number,
         signature,
         message,
+        expected_balance,
     })
 }
 
@@ -50,6 +53,8 @@ pub fn parse_json_contract(filename: &str) -> Result<ContractRequest, Error> {
     let block_number = String::from(data["block_number"].as_str().unwrap());
     let signature = String::from(data["signature"].as_str().unwrap());
     let message = format_eth_message(String::from(data["message"].as_str().unwrap()));
+    let expected_balance = data["expected_balance"].as_u64().unwrap();
+
     let contract_address = String::from(data["contract_address"].as_str().unwrap());
     let balance_slot = String::from(data["balance_slot"].as_str().unwrap());
 
@@ -59,6 +64,7 @@ pub fn parse_json_contract(filename: &str) -> Result<ContractRequest, Error> {
         block_number,
         signature,
         message,
+        expected_balance,
         contract_address,
         balance_slot,
     })

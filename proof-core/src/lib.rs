@@ -1,5 +1,5 @@
 pub mod eth_utils;
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct NativeProofInput {
@@ -23,6 +23,7 @@ pub struct NativeProofOutput {
     pub root: [u8; 32],
     pub expected_balance: u64,
     pub block_hash: [u8; 32],
+    pub message: Vec<u8>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -54,3 +55,8 @@ pub struct ContractProofOutput {
     pub block_hash: [u8; 32],
     pub message: Vec<u8>,
 }
+
+pub trait ProofInput: Serialize {}
+
+impl ProofInput for ContractProofInput {}
+impl ProofInput for NativeProofInput {}

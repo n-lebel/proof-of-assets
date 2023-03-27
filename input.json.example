@@ -5,10 +5,12 @@
   "user_address": "",
   # ECDSA secp256k1 signature of the keccak256-hashed MESSAGE, with v = {00, 01} and not {27, 28}
   "signature": "",
-  # MESSAGE should be the original, unformatted string
+  # message should be the original, unformatted string
   "message": "",
-  # BLOCK_NUMBER is the block number to prove assets against. "latest" will provide the latest block
+  # block_number is the block number to prove assets against. "latest" will provide the latest block
   "block_number": "latest"
+  # expected_balance is the claimed balance of the account, which should be smaller or equal to the real balance
+  "expected_balance": 0,
 
 
   ###### ADD IF PROVE_ERC #######

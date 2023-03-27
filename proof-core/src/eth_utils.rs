@@ -22,26 +22,6 @@ pub struct EthGetBlockBody {
     pub storage_hash: [u8; 32],
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-pub struct NativeRequest {
-    pub provider: String,
-    pub user_address: String,
-    pub block_number: String,
-    pub signature: String,
-    pub message: String,
-}
-
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-pub struct ContractRequest {
-    pub provider: String,
-    pub user_address: String,
-    pub block_number: String,
-    pub signature: String,
-    pub message: String,
-    pub contract_address: String,
-    pub balance_slot: String,
-}
-
 pub fn decode_ethereum_rlp(encoded: &[u8]) -> Result<Vec<Vec<u8>>, DecoderError> {
     let rlp = Rlp::new(encoded);
     let decoded: Vec<Vec<u8>> = rlp.as_list()?;
