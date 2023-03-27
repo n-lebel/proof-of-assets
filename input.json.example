@@ -1,0 +1,21 @@
+{
+  # Ethereum JSON-RPC provider
+  "provider": "",
+  # Ethereum user address being proven
+  "user_address": "",
+  # ECDSA secp256k1 signature of the keccak256-hashed MESSAGE, with v = {00, 01} and not {27, 28}
+  "signature": "",
+  # MESSAGE should be the original, unformatted string
+  "message": "",
+  # BLOCK_NUMBER is the block number to prove assets against. "latest" will provide the latest block
+  "block_number": "latest"
+
+
+  ###### ADD IF PROVE_ERC #######
+
+  # Address of the contract being queried
+  "contract_address": "",
+  # BALANCE_SLOT is the bytes32-padded slot of the balance mapping
+  "balance_slot": ""
+
+}

@@ -3,7 +3,7 @@
 use proof_core::{
     ContractProofInput,
     ContractProofOutput,
-    eth_utils::{ decode_ethereum_rlp, recover_public_key, derive_address, be_bytes_geq },
+    eth_utils::{ recover_public_key, derive_address, be_bytes_geq },
 };
 use risc0_zkvm::guest::env;
 use std::sync::Arc;

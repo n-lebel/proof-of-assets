@@ -16,17 +16,30 @@ pub struct EthGetProofBody {
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-pub struct StorageProof {
-    pub key: String,
-    pub value: String,
-    pub proof: Vec<String>,
-}
-
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct EthGetBlockBody {
     pub number: String,
     pub block_hash: [u8; 32],
     pub storage_hash: [u8; 32],
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct NativeRequest {
+    pub provider: String,
+    pub user_address: String,
+    pub block_number: String,
+    pub signature: String,
+    pub message: String,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct ContractRequest {
+    pub provider: String,
+    pub user_address: String,
+    pub block_number: String,
+    pub signature: String,
+    pub message: String,
+    pub contract_address: String,
+    pub balance_slot: String,
 }
 
 pub fn decode_ethereum_rlp(encoded: &[u8]) -> Result<Vec<Vec<u8>>, DecoderError> {

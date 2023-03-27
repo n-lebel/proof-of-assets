@@ -1,6 +1,6 @@
 use prefix_hex::{ decode, encode };
 use proof_core::{
-    eth_utils::{ EthGetBlockBody, EthGetProofBody },
+    eth_utils::{ NativeRequest, ContractRequest, EthGetBlockBody, EthGetProofBody },
     ContractProofInput,
     NativeProofInput,
 };
@@ -109,64 +109,50 @@ impl EthereumRpcClient {
     }
 }
 
-pub fn get_native_input(
-    provider: &str,
-    address: &str,
-    block_number: &str,
-    signature: &str,
-    message: &str
-) -> Result<NativeProofInput> {
-    let client = EthereumRpcClient::new(provider);
-    let block_response = client.get_block_by_number(block_number)?;
+pub fn get_native_input(input: NativeRequest) -> Result<NativeProofInput> {
+    let client = EthereumRpcClient::new(&input.provider);
+    let block_response = client.get_block_by_number(&input.block_number)?;
     // for the proof block number, we pass the previous call's response to make sure
     // they are the same (e.g. if "latest" was used there could be a discrepancy)
-    let proof_response = client.get_proof(address, &block_response.number, "")?;
+    let proof_response = client.get_proof(&input.user_address, &block_response.number, "")?;
 
     let result = NativeProofInput {
         root: block_response.storage_hash,
         block_hash: block_response.block_hash,
         account_proof: proof_response.account_proof,
-        account: decode(address).unwrap(),
+        account: decode(&input.user_address).unwrap(),
         expected_balance: 0,
-        signature: decode(signature).unwrap(),
-        message: message.as_bytes().to_vec(),
+        signature: decode(&input.signature).unwrap(),
+        message: input.message.as_bytes().to_vec(),
     };
 
     Ok(result)
 }
 
-pub fn get_contract_input(
-    provider: &str,
-    address: &str,
-    block_number: &str,
-    signature: &str,
-    message: &str,
-    contract_address: &str,
-    balance_slot: &str
-) -> Result<ContractProofInput> {
-    let client = EthereumRpcClient::new(provider);
-    let block_response = client.get_block_by_number(block_number)?;
+pub fn get_contract_input(input: ContractRequest) -> Result<ContractProofInput> {
+    let client = EthereumRpcClient::new(&input.provider);
+    let block_response = client.get_block_by_number(&input.block_number)?;
     // for the proof block number, we pass the previous call's response to make sure
     // they are the same (e.g. if "latest" was used there could be a discrepancy)
     let key_prehash: [u8; 64] = concat_arrays!(
         [0_u8; 12],
-        decode::<[u8; 20]>(address).unwrap(),
-        decode::<[u8; 32]>(balance_slot).unwrap()
+        decode::<[u8; 20]>(&input.user_address).unwrap(),
+        decode::<[u8; 32]>(&input.balance_slot).unwrap()
     );
     let key: String = encode(Keccak256::digest(key_prehash).to_vec());
 
-    let proof_response = client.get_proof(contract_address, &block_response.number, &key)?;
+    let proof_response = client.get_proof(&input.contract_address, &block_response.number, &key)?;
 
     let result = ContractProofInput {
         storage_hash: proof_response.storage_hash,
         block_hash: block_response.block_hash,
         storage_proof: proof_response.storage_proof,
-        account_address: decode(address).unwrap(),
-        contract_address: decode(contract_address).unwrap(),
-        balance_slot: decode(balance_slot).unwrap(),
+        account_address: decode(&input.user_address).unwrap(),
+        contract_address: decode(&input.contract_address).unwrap(),
+        balance_slot: decode(&input.balance_slot).unwrap(),
         expected_balance: 0,
-        signature: decode(signature).unwrap(),
-        message: message.as_bytes().to_vec(),
+        signature: decode(&input.signature).unwrap(),
+        message: input.message.as_bytes().to_vec(),
     };
 
     Ok(result)
