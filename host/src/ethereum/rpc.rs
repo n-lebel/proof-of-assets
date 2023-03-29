@@ -1,10 +1,10 @@
+use crate::ethereum::requests::{ ContractRequest, NativeRequest };
 use prefix_hex::{ decode, encode };
 use proof_core::{
     eth_utils::{ EthGetBlockBody, EthGetProofBody },
     ContractProofInput,
     NativeProofInput,
 };
-use crate::ethereum::requests::{ NativeRequest, ContractRequest };
 
 use concat_arrays::concat_arrays;
 use serde_json::Value;
@@ -121,7 +121,7 @@ pub fn get_native_input(input: &NativeRequest) -> Result<NativeProofInput> {
         root: block_response.storage_hash,
         block_hash: block_response.block_hash,
         account_proof: proof_response.account_proof,
-        account: decode(&input.user_address).unwrap(),
+        user_address: decode(&input.user_address).unwrap(),
         expected_balance: input.expected_balance,
         signature: decode(&input.signature).unwrap(),
         message: input.message.as_bytes().to_vec(),
@@ -148,7 +148,7 @@ pub fn get_contract_input(input: &ContractRequest) -> Result<ContractProofInput>
         storage_hash: proof_response.storage_hash,
         block_hash: block_response.block_hash,
         storage_proof: proof_response.storage_proof,
-        account_address: decode(&input.user_address).unwrap(),
+        user_address: decode(&input.user_address).unwrap(),
         contract_address: decode(&input.contract_address).unwrap(),
         balance_slot: decode(&input.balance_slot).unwrap(),
         expected_balance: input.expected_balance,

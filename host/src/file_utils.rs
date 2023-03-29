@@ -1,10 +1,10 @@
+use crate::ethereum::requests::{ContractRequest, NativeRequest};
+use proof_core::eth_utils::format_eth_message;
 use serde::Serialize;
-use serde_json::{ Value, Error };
-use proof_core::eth_utils::{ format_eth_message };
-use crate::ethereum::requests::{ ContractRequest, NativeRequest };
+use serde_json::{Error, Value};
 
-use std::fs::{ create_dir_all, File };
-use std::io::{ Read, Write };
+use std::fs::{create_dir_all, File};
+use std::io::{Read, Write};
 use std::path::Path;
 
 pub fn write_json<T: Serialize>(value: &T, file_path: &str) -> std::io::Result<()> {
@@ -73,6 +73,7 @@ pub fn parse_json_contract(filename: &str) -> Result<ContractRequest, Error> {
 fn read_json_file(filename: &str) -> Result<Value, Error> {
     let mut file = File::open(filename).expect("Unable to open the file");
     let mut contents = String::new();
-    file.read_to_string(&mut contents).expect("Unable to read the file");
+    file.read_to_string(&mut contents)
+        .expect("Unable to read the file");
     serde_json::from_str(&contents)
 }

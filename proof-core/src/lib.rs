@@ -4,7 +4,7 @@ use serde::{ Deserialize, Serialize };
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct NativeProofInput {
     // account address
-    pub account: [u8; 20],
+    pub user_address: [u8; 20],
     // Ethereum account trie root
     pub root: [u8; 32],
     // Ethereum block hash
@@ -33,7 +33,7 @@ pub struct ContractProofInput {
     // Balance mapping slot (padded to bytes32)
     pub balance_slot: [u8; 32],
     // Account address
-    pub account_address: [u8; 20],
+    pub user_address: [u8; 20],
     // Ethereum account trie root
     pub storage_hash: [u8; 32],
     // Ethereum block hash

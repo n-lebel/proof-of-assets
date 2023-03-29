@@ -21,14 +21,14 @@ pub fn main() {
     let pubkey = derive_address(
         &recover_public_key(&input.signature, &input.message).unwrap()
     ).unwrap();
-    if pubkey != input.account.to_owned() {
+    if pubkey != input.user_address.to_owned() {
         panic!("Signature does not match provided address.");
     }
 
     // Verify Merkle-Patricia trie proof (accountProof in eth_getProof)
     let memdb = Arc::new(MemoryDB::new(true));
     let trie = EthTrie::new(memdb);
-    let key = Keccak256::digest(&input.account).to_vec();
+    let key = Keccak256::digest(&input.user_address).to_vec();
     let result = trie
         .verify_proof((&input.root).into(), &key, input.account_proof)
         .unwrap()

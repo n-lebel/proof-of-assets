@@ -22,16 +22,12 @@ pub fn main() {
     let pubkey = derive_address(
         &recover_public_key(&input.signature, &input.message).unwrap()
     ).unwrap();
-    if pubkey != input.account_address.to_owned() {
+    if pubkey != input.user_address.to_owned() {
         panic!("Signature does not match provided address.");
     }
 
     // Compute storage key: for balance mapping, it's Keccak(abi.encode(mapping_key, uint256(mapping_slot)))
-    let key_prehash: [u8; 64] = concat_arrays!(
-        [0_u8; 12],
-        input.account_address,
-        input.balance_slot
-    );
+    let key_prehash: [u8; 64] = concat_arrays!([0_u8; 12], input.user_address, input.balance_slot);
     let key_prehash = Keccak256::digest(&key_prehash);
     let key = Keccak256::digest(&key_prehash).to_vec();
     // Verify Merkle-Patricia trie proof (accountProof in eth_getProof)

@@ -2,9 +2,9 @@ mod ethereum;
 mod file_utils;
 mod prover;
 
-use file_utils::{ write_json, parse_json_native, parse_json_contract };
-use prover::{ prove_assets };
-use clap::{ Command, Arg };
+use clap::{Arg, Command};
+use file_utils::{parse_json_contract, parse_json_native, write_json};
+use prover::prove_assets;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = Command::new("prove-assets")
@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .long("input")
                 .value_name("FILE")
                 .help("Sets the input JSON file")
-                .required(true)
+                .required(true),
         )
         .arg(
             Arg::new("command")
@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .long("command")
                 .value_name("COMMAND")
                 .help("Sets the command to execute: prove_eth or prove_erc")
-                .required(true)
+                .required(true),
         )
         .get_matches();
 
