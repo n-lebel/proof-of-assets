@@ -1,52 +1,45 @@
 use crate::ethereum::requests::Request;
 use crate::write_json;
 
-use proof_core::ProofInput;
+use proof_core::proof_inputs::ProofInput;
 use risc0_zkvm::{serde::to_vec, Prover, Receipt};
 
 use prefix_hex::decode;
-use proof_core::eth_utils::{derive_address, recover_public_key};
+use proof_core::eth_utils::check_signature;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
-pub fn check_signature(sig: &str, msg: &str, addr: &str) -> Result<bool> {
-    let pubkey = derive_address(&recover_public_key(&decode(sig).unwrap(), &msg.into()).unwrap())?;
-
-    Ok(pubkey == decode::<[u8; 20]>(addr).unwrap())
-}
-
-pub fn prove_assets<T>(input: T) -> Result<()>
-where
-    T: Request,
-{
+pub fn prove_assets<T: Request>(request: &T) -> Result<()> {
     // Check that the provided signature matches the account before running the costly proving algorithm
     assert!(check_signature(
-        &input.get_signature(),
-        &input.get_message(),
-        &input.get_user_address()
+        &request.get_signature(),
+        &request.get_message(),
+        &request.get_user_address()
     )?);
     println!(
         "Signature corresponds to address {}",
-        &input.get_user_address()
+        &request.get_user_address()
     );
-
     println!(
         "Requesting {} for {}",
-        input.get_description(),
-        input.get_user_address()
+        request.get_description(),
+        request.get_user_address()
     );
 
     // get_input queries the ETHEREUM_PROVIDER over HTTP for a state root and account proof for "address"
-    let proof_input_body = input.get_proof_input()?;
+    let proof_input_body = request.get_proof_input()?;
     println!("Response successfully received.");
-
     println!("Generating STARK proof of assets...");
-    // run_prover runs the verification of the Merkle Patricia proof within the zkVM
-    let receipt = run_prover(&input, &proof_input_body);
+
+    let mut prover = Prover::new(request.get_proof_elf(), request.get_proof_id()).expect(
+        "Prover should be constructed from valid method source code and corresponding image ID",
+    );
+    // run_prover runs the verification of the Merkle Patricia proof within the zkVM with the provided prover
+    let receipt = run_prover(&proof_input_body, &mut prover);
 
     // Verify receipt seal
     receipt
-        .verify(&input.get_proof_id())
+        .verify(&request.get_proof_id())
         .expect("Unable to verify receipt.");
 
     write_json(&receipt, "./target/proofs").expect("Failed to write to file.");
@@ -58,11 +51,7 @@ where
     Ok(())
 }
 
-fn run_prover<T: Request, S: ProofInput>(request: &T, input: &S) -> Receipt {
-    let mut prover = Prover::new(request.get_proof_elf(), request.get_proof_id()).expect(
-        "Prover should be constructed from valid method source code and corresponding image ID",
-    );
-
+fn run_prover<T: ProofInput>(input: &T, prover: &mut Prover) -> Receipt {
     // Next we send input to the guest
     prover.add_input_u32_slice(
         to_vec(input)

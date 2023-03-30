@@ -35,11 +35,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     match command {
         "prove_eth" => {
             let request = parse_json_native(input_file)?;
-            prove_assets(request)?;
+            prove_assets(&request)?;
         }
         "prove_erc" => {
             let request = parse_json_contract(input_file)?;
-            prove_assets(request)?;
+            prove_assets(&request)?;
         }
         _ => {
             eprintln!("Invalid command. Please use 'prove_eth' or 'prove_erc'.");

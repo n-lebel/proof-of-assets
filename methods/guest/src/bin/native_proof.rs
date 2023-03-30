@@ -1,13 +1,12 @@
 #![no_main]
 
 use proof_core::{
-    NativeProofInput,
-    NativeProofOutput,
-    eth_utils::{ decode_ethereum_rlp, recover_public_key, derive_address, vec_be_bytes_geq },
+    proof_inputs::{ NativeProofInput, NativeProofOutput },
+    eth_utils::{ decode_ethereum_rlp, vec_be_bytes_geq },
+    proof_utils::{ verify_signed_message, create_eth_trie },
 };
 use risc0_zkvm::guest::env;
-use std::sync::Arc;
-use eth_trie::{ EthTrie, MemoryDB, Trie };
+use eth_trie::{ Trie };
 use sha3::{ Keccak256, Digest };
 
 risc0_zkvm::guest::entry!(main);
@@ -18,16 +17,10 @@ pub fn main() {
     // Verify signed message corresponds to provided address
     // NOTE: Naive ECDSA verification is extremely costly, should be replaced by accelerated circuit
     // as soon as those are made available for Risc0
-    let pubkey = derive_address(
-        &recover_public_key(&input.signature, &input.message).unwrap()
-    ).unwrap();
-    if pubkey != input.user_address.to_owned() {
-        panic!("Signature does not match provided address.");
-    }
+    verify_signed_message(&input.signature, &input.message, &input.user_address);
 
     // Verify Merkle-Patricia trie proof (accountProof in eth_getProof)
-    let memdb = Arc::new(MemoryDB::new(true));
-    let trie = EthTrie::new(memdb);
+    let trie = create_eth_trie();
     let key = Keccak256::digest(&input.user_address).to_vec();
     let result = trie
         .verify_proof((&input.root).into(), &key, input.account_proof)

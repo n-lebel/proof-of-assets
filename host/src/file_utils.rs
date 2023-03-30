@@ -77,3 +77,110 @@ fn read_json_file(filename: &str) -> Result<Value, Error> {
         .expect("Unable to read the file");
     serde_json::from_str(&contents)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{parse_json_contract, parse_json_native, write_json};
+    use proof_core::eth_utils::format_eth_message;
+    use serde_json::json;
+    use std::fs::File;
+    use std::io::Write;
+    use std::path::Path;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_write_json() {
+        let temp_dir = tempdir().unwrap();
+        let file_path = temp_dir.path().to_str().unwrap();
+
+        let data = json!({
+            "key": "value"
+        });
+
+        write_json(&data, file_path).unwrap();
+        let path = Path::new(file_path).join("receipt.json");
+        assert!(path.exists());
+    }
+
+    #[test]
+    fn test_read_json_file() {
+        let temp_dir = tempdir().unwrap();
+        let file_path = temp_dir.path().join("test_read.json");
+        let test_data = r#"
+        {
+            "key": "value"
+        }
+        "#;
+
+        let mut file = File::create(&file_path).unwrap();
+        file.write_all(test_data.as_bytes()).unwrap();
+        let contents = read_json_file(file_path.to_str().unwrap()).unwrap();
+
+        assert_eq!(contents["key"], "value");
+    }
+
+    #[test]
+    fn test_parse_json_native() {
+        let temp_dir = tempdir().unwrap();
+        let file_path = temp_dir.path().join("test_parse_native.json");
+        let test_data = r#"
+        {
+            "provider": "test_provider",
+            "user_address": "test_user_address",
+            "block_number": "12345",
+            "signature": "test_signature",
+            "message": "test_message",
+            "expected_balance": 1000
+        }
+        "#;
+
+        let mut file = File::create(&file_path).unwrap();
+        file.write_all(test_data.as_bytes()).unwrap();
+        let native_request = parse_json_native(file_path.to_str().unwrap()).unwrap();
+
+        assert_eq!(native_request.provider, "test_provider");
+        assert_eq!(native_request.user_address, "test_user_address");
+        assert_eq!(native_request.block_number, "12345");
+        assert_eq!(native_request.signature, "test_signature");
+        assert_eq!(
+            native_request.message,
+            format_eth_message("test_message".to_string())
+        );
+        assert_eq!(native_request.expected_balance, 1000);
+    }
+
+    #[test]
+    fn test_parse_json_contract() {
+        let temp_dir = tempdir().unwrap();
+        let file_path = temp_dir.path().join("test_parse_contract.json");
+        let test_data = r#"
+        {
+            "provider": "test_provider",
+            "user_address": "test_user_address",
+            "block_number": "12345",
+            "signature": "test_signature",
+            "message": "test_message",
+            "expected_balance": 1000,
+            "contract_address": "test_contract_address",
+            "balance_slot": "test_balance_slot"
+        }
+        "#;
+
+        let mut file = File::create(&file_path).unwrap();
+        file.write_all(test_data.as_bytes()).unwrap();
+        let contract_request = parse_json_contract(file_path.to_str().unwrap()).unwrap();
+
+        assert_eq!(contract_request.provider, "test_provider");
+        assert_eq!(contract_request.user_address, "test_user_address");
+        assert_eq!(contract_request.block_number, "12345");
+        assert_eq!(contract_request.signature, "test_signature");
+        assert_eq!(
+            contract_request.message,
+            format_eth_message("test_message".to_string())
+        );
+        assert_eq!(contract_request.expected_balance, 1000);
+        assert_eq!(contract_request.contract_address, "test_contract_address");
+        assert_eq!(contract_request.balance_slot, "test_balance_slot");
+    }
+}
