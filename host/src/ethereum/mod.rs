@@ -1,4 +1,3 @@
 // ethereum/mod.rs
+pub mod requests;
 pub mod rpc;
-
-pub use rpc::{get_contract_input, get_native_input};

@@ -1,0 +1,11 @@
+{
+  "provider": "localhost:8001",
+  "user_address": "0x63d90be9ac2859c0b94421281747cefe89b4223c",
+  "signature": "0x7b1079455ef9a6f7df56eee8cc3f63cddc13172b0101494d341c043fec50aa986985b8bf97cda7329ef5230d7c05656bcda7744a106df54bc1d6beaeb790f2a400",
+  "message": "hello world",
+  "block_number": "latest",
+  "expected_balance": 0,
+
+  "contract_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  "balance_slot": "0x00000000000000000000000000000000000000000000000000000000000000000000000009"
+}

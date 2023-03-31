@@ -5,6 +5,9 @@ edition = "2021"
 
 [dev-dependencies]
 rusty-hook = "0.11"
+tempfile = "3.5.0"
+k256 = { version = "0.11.6", features = ["ecdsa", "ecdsa-core", "keccak256"] }
+rand_core = { version = "0.6.4", features = ["getrandom"] }
 
 [dependencies]
 hex = "0.4.3"
@@ -19,3 +22,8 @@ serde_json = "1.0.94"
 ureq = {version = "2.4.0", features = ["json"]}
 dotenv = "0.15.0"
 concat-arrays = "0.1.2"
+clap = "4.1.13"
+
+[[bin]]
+name = "prove-assets"
+path = "src/main.rs"
