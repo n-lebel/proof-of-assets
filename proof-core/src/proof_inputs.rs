@@ -52,6 +52,7 @@ pub struct ContractProofOutput {
     pub storage_hash: [u8; 32],
     pub expected_balance: u64,
     pub block_hash: [u8; 32],
+    pub balance_slot: [u8; 32],
     pub message: Vec<u8>,
 }
 

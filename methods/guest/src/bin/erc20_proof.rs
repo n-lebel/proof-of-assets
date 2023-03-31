@@ -1,14 +1,14 @@
 #![no_main]
 
+use concat_arrays::concat_arrays;
+use eth_trie::Trie;
 use proof_core::{
-    proof_inputs::{ ContractProofInput, ContractProofOutput },
-    eth_utils::{ be_bytes_geq },
-    proof_utils::{ verify_signed_message, create_eth_trie },
+    eth_utils::be_bytes_geq,
+    proof_inputs::{ContractProofInput, ContractProofOutput},
+    proof_utils::{create_eth_trie, verify_signed_message},
 };
 use risc0_zkvm::guest::env;
-use eth_trie::{ Trie };
-use sha3::{ Keccak256, Digest };
-use concat_arrays::concat_arrays;
+use sha3::{Digest, Keccak256};
 
 risc0_zkvm::guest::entry!(main);
 
@@ -43,7 +43,8 @@ pub fn main() {
             block_hash: input.block_hash,
             expected_balance: input.expected_balance,
             contract_address: input.contract_address,
+            balance_slot: input.balance_slot,
             message: input.message,
-        })
+        }),
     );
 }

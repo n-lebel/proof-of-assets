@@ -26,4 +26,4 @@ Then, simply run the following command to execute the zk-STARK proving algorithm
 cargo run --release -- --input <INPUT_FILE (input.json)> --command <prove_eth OR prove_erc>
 ```
 
-The program outputs a receipt file in `target/proofs/receipt.json`, which contains a seal (the STARK itself), and a journal which is made of the serialized "public inputs": the account trie root, the block hash, and the claimed balance.
+The program outputs a receipt file in `target/proofs/receipt.json`, which contains a seal (the STARK itself), and a journal which is made of the serialized public inputs: the account trie root, the block hash, the claimed balance, the message, and if applicable the contract address and corresponding balance slot.
