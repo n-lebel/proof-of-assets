@@ -16,3 +16,4 @@ eth_trie = { git = "https://github.com/carver/eth-trie.rs.git" }
 
 [dev-dependencies]
 hex-literal = "0.3.4"
+primitive-types = "0.11.0"
