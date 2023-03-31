@@ -32,7 +32,7 @@ And for proving values of contract slots, add the following fields:
 Two proving modes are available, `prove_eth` and `prove_erc`. They are used in the following way:
 
 - `prove_eth` allows you to prove ownership of native assets on Ethereum-equivalent chains. For example, ownership of ETH on Ethereum mainnet
-- `prove_contract` allows you to prove ownership of contract-based assets on Ethereum-equivalent chains. For example, for an ERC-20 token, you would want to prove that the balance slot associated to your address holds a given value
+- `prove_erc` allows you to prove ownership of contract-based assets on Ethereum-equivalent chains. For example, for an ERC-20 token, you would want to prove that the balance slot associated to your address holds a given value
 
 #### Proving
 
