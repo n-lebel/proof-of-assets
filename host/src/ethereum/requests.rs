@@ -1,6 +1,6 @@
 use crate::ethereum::rpc::{get_contract_input, get_native_input};
 use methods::{ERC20_PROOF_ELF, ERC20_PROOF_ID, NATIVE_PROOF_ELF, NATIVE_PROOF_ID};
-use proof_core::proof_inputs::{ContractProofInput, NativeProofInput, ProofInput};
+use proof_core::proof_io::{ContractProofInput, NativeProofInput, ProofInput};
 use serde::{Deserialize, Serialize};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;

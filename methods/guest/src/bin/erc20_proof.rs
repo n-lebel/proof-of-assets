@@ -4,7 +4,7 @@ use concat_arrays::concat_arrays;
 use eth_trie::Trie;
 use proof_core::{
     eth_utils::be_bytes_geq,
-    proof_inputs::{ContractProofInput, ContractProofOutput},
+    proof_io::{ContractProofInput, ContractProofOutput},
     proof_utils::{create_eth_trie, verify_signed_message},
 };
 use risc0_zkvm::guest::env;

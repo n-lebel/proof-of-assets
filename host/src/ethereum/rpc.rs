@@ -2,7 +2,7 @@ use crate::ethereum::requests::{ContractRequest, NativeRequest};
 use prefix_hex::{decode, encode, FromHexPrefixed};
 use proof_core::{
     eth_utils::{EthGetBlockBody, EthGetProofBody},
-    proof_inputs::{ContractProofInput, NativeProofInput},
+    proof_io::{ContractProofInput, NativeProofInput},
 };
 
 use concat_arrays::concat_arrays;

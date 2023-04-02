@@ -43,7 +43,6 @@ pub fn recover_public_key(
     msg: &Vec<u8>,
 ) -> Result<VerifyingKey, k256::ecdsa::Error> {
     let signature = Signature::from_bytes(&sig)?;
-    println!("{:?}", signature.recover_verifying_key(&msg)?.to_bytes());
     Ok(signature.recover_verifying_key(&msg)?)
 }
 
