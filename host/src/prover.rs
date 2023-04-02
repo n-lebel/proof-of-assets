@@ -1,10 +1,9 @@
 use crate::ethereum::requests::Request;
 use crate::write_json;
 
-use proof_core::proof_inputs::ProofInput;
+use proof_core::proof_io::ProofInput;
 use risc0_zkvm::{serde::to_vec, Prover, Receipt};
 
-use prefix_hex::decode;
 use proof_core::eth_utils::check_signature;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;

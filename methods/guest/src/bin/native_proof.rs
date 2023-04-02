@@ -1,13 +1,13 @@
 #![no_main]
 
+use eth_trie::Trie;
 use proof_core::{
-    proof_inputs::{ NativeProofInput, NativeProofOutput },
-    eth_utils::{ decode_ethereum_rlp, vec_be_bytes_geq },
-    proof_utils::{ verify_signed_message, create_eth_trie },
+    eth_utils::{decode_ethereum_rlp, vec_be_bytes_geq},
+    proof_io::{NativeProofInput, NativeProofOutput},
+    proof_utils::{create_eth_trie, verify_signed_message},
 };
 use risc0_zkvm::guest::env;
-use eth_trie::{ Trie };
-use sha3::{ Keccak256, Digest };
+use sha3::{Digest, Keccak256};
 
 risc0_zkvm::guest::entry!(main);
 
@@ -42,6 +42,6 @@ pub fn main() {
             block_hash: input.block_hash,
             expected_balance: input.expected_balance,
             message: input.message,
-        })
+        }),
     );
 }
