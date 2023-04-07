@@ -13,6 +13,7 @@ rlp = "0.5.2"
 sha3 = "0.10.6"
 prefix-hex = "0.5.0"
 eth_trie = { git = "https://github.com/carver/eth-trie.rs.git" }
+serde_json = "1.0.95"
 
 [dev-dependencies]
 hex-literal = "0.3.4"
