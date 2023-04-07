@@ -1,7 +1,8 @@
 use crate::ethereum::requests::{ContractRequest, NativeRequest};
 use proof_core::eth_utils::format_eth_message;
-use serde::Serialize;
-use serde_json::{Error, Value};
+use risc0_zkvm::Receipt;
+use serde::{de::Error, Serialize};
+use serde_json::{Error as SerdeJsonError, Value};
 
 use std::fs::{create_dir_all, File};
 use std::io::{Read, Write};
@@ -25,7 +26,7 @@ pub fn write_json<T: Serialize>(value: &T, file_path: &str) -> std::io::Result<(
     Ok(())
 }
 
-pub fn parse_json_native(filename: &str) -> Result<NativeRequest, Error> {
+pub fn parse_json_native(filename: &str) -> Result<NativeRequest, SerdeJsonError> {
     let data = read_json_file(filename).unwrap();
 
     let provider = String::from(data["provider"].as_str().unwrap());
@@ -45,7 +46,7 @@ pub fn parse_json_native(filename: &str) -> Result<NativeRequest, Error> {
     })
 }
 
-pub fn parse_json_contract(filename: &str) -> Result<ContractRequest, Error> {
+pub fn parse_json_contract(filename: &str) -> Result<ContractRequest, SerdeJsonError> {
     let data = read_json_file(filename)?;
 
     let provider = String::from(data["provider"].as_str().unwrap());
@@ -70,7 +71,41 @@ pub fn parse_json_contract(filename: &str) -> Result<ContractRequest, Error> {
     })
 }
 
-fn read_json_file(filename: &str) -> Result<Value, Error> {
+pub fn parse_json_receipt(path: &str) -> Result<Receipt, SerdeJsonError> {
+    let data = read_json_file(path)?;
+
+    // Unwrap seal into Vec<Value>
+    let seal = data["seal"]
+        .as_array()
+        .ok_or(SerdeJsonError::missing_field("seal"))?;
+    // Convert values into u32
+    let seal: Result<Vec<u32>, SerdeJsonError> = seal
+        .iter()
+        .map(|v| {
+            v.as_u64()
+                .ok_or(SerdeJsonError::custom("Invalid type in seal array"))
+                .map(|num| num as u32)
+        })
+        .collect();
+
+    // Unwrap journal into Vec<Value>
+    let journal = data["journal"]
+        .as_array()
+        .ok_or(SerdeJsonError::missing_field("journal"))?;
+    // Convert values into u8
+    let journal: Result<Vec<u8>, SerdeJsonError> = journal
+        .iter()
+        .map(|v| {
+            v.as_u64()
+                .ok_or(SerdeJsonError::custom("Invalid type in journal array"))
+                .map(|num| num as u8)
+        })
+        .collect();
+
+    Ok(Receipt::new(&journal?, &seal?))
+}
+
+fn read_json_file(filename: &str) -> Result<Value, SerdeJsonError> {
     let mut file = File::open(filename).expect("Unable to open the file");
     let mut contents = String::new();
     file.read_to_string(&mut contents)
@@ -87,7 +122,7 @@ mod tests {
     use std::fs::File;
     use std::io::Write;
     use std::path::Path;
-    use tempfile::tempdir;
+    use tempfile::{tempdir, NamedTempFile};
 
     #[test]
     fn test_write_json() {
@@ -182,5 +217,70 @@ mod tests {
         assert_eq!(contract_request.expected_balance, 1000);
         assert_eq!(contract_request.contract_address, "test_contract_address");
         assert_eq!(contract_request.balance_slot, "test_balance_slot");
+    }
+
+    fn create_temp_json_file(json_content: &serde_json::Value) -> NamedTempFile {
+        let mut temp_file = NamedTempFile::new().expect("Unable to create temporary file");
+        let content = json_content.to_string();
+        temp_file
+            .write_all(content.as_bytes())
+            .expect("Unable to write to temporary file");
+        temp_file
+    }
+
+    #[test]
+    fn test_parse_json_receipt_valid() {
+        let valid_json = json!({
+            "seal": [1, 2, 3],
+            "journal": [42, 34, 12]
+        });
+
+        let temp_file = create_temp_json_file(&valid_json);
+        let path = temp_file.path().to_str().unwrap();
+        let receipt = parse_json_receipt(path).unwrap();
+
+        assert_eq!(receipt.seal, vec![1, 2, 3]);
+        assert_eq!(receipt.journal, vec![42, 34, 12]);
+    }
+
+    #[test]
+    fn test_parse_json_receipt_missing_seal() {
+        let missing_seal_json = json!({
+            "journal": [42, 34, 12]
+        });
+
+        let temp_file = create_temp_json_file(&missing_seal_json);
+        let path = temp_file.path().to_str().unwrap();
+        let result = parse_json_receipt(path);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_json_receipt_missing_journal() {
+        let missing_journal_json = json!({
+            "seal": [1, 2, 3]
+        });
+
+        let temp_file = create_temp_json_file(&missing_journal_json);
+        let path = temp_file.path().to_str().unwrap();
+        let result = parse_json_receipt(path);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_json_receipt_invalid_type() {
+        let invalid_type_json = json!({
+            "seal": [1, 2, "invalid"],
+            "journal": [42, 34, 12]
+        });
+
+        let temp_file = create_temp_json_file(&invalid_type_json);
+        let path = temp_file.path().to_str().unwrap();
+        let result = parse_json_receipt(path);
+
+        assert!(result.is_err());
+        // The test will panic when unwrapping invalid data, so we won't check the specific error
     }
 }

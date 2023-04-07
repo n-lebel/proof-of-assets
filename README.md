@@ -31,15 +31,20 @@ And for proving values of contract slots, add the following fields:
 
 Two proving modes are available, `prove_eth` and `prove_erc`. They are used in the following way:
 
-- `prove_eth` allows you to prove ownership of native assets on Ethereum-equivalent chains. For example, ownership of ETH on Ethereum mainnet
+- `prove_native` allows you to prove ownership of native assets on Ethereum-equivalent chains. For example, ownership of ETH on Ethereum mainnet
 - `prove_contract` allows you to prove ownership of contract-based assets on Ethereum-equivalent chains. For example, for an ERC-20 token, you would want to prove that the balance slot associated to your address holds a given value
+
+The corresponding verifying modes are given by the following functions, with the JSON receipt passed as input:
+
+- `verify_native` verifies a proof produced by `prove_native`
+- `verify_contract` verifies a proof produced by `prove_contract`
 
 #### Proving
 
 To execute the zk-STARK proving algorithm, simply run the following command within the repo:
 
 ```
-cargo run --release -- --input <INPUT_FILE (input.json)> --command <prove_eth OR prove_erc>
+cargo run --release -- --input <INPUT_FILE (input/receipt.json)> --command <COMMAND>
 ```
 
 The program outputs a receipt file in `target/proofs/receipt.json`, which contains a seal (the STARK itself), and a journal which is made of the serialized public inputs: the account trie root, the block hash, the claimed balance, the message, and if applicable the contract address and corresponding balance slot.
