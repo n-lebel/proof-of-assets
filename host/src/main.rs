@@ -81,7 +81,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use risc0_zkvm::Receipt;
     use std::io::Write;
     use tempfile::NamedTempFile;
 
@@ -100,7 +99,7 @@ mod tests {
             .write_all(json.as_bytes())
             .expect("Unable to write to temporary file");
         let parsed_receipt = parse_json_receipt(temp_file.path().to_str().unwrap())?;
-        let output: NativeProofOutput = verify_receipt(&parsed_receipt, &NATIVE_PROOF_ID)?;
+        let _output: NativeProofOutput = verify_receipt(&parsed_receipt, &NATIVE_PROOF_ID)?;
 
         // check that both the original and receovered receipts match
         assert_eq!(receipt.journal, parsed_receipt.journal);
