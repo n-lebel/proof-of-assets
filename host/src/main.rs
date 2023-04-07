@@ -77,3 +77,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use risc0_zkvm::Receipt;
+    use std::io::Write;
+    use tempfile::NamedTempFile;
+
+    #[test]
+    #[ignore]
+    pub fn test_prove_verify() -> Result<(), Box<dyn std::error::Error>> {
+        // get input and prove the assertion
+        let input_file = "/Users/nlb/Documents/rust/projects/proof-of-assets/input/input.json";
+        let request = parse_json_native(input_file)?;
+        let receipt = prove_assets(&request)?;
+
+        // create a temp file, write the receipt and load it back in
+        let mut temp_file = NamedTempFile::new().expect("Unable to create temporary file");
+        let json = serde_json::to_string(&receipt).unwrap();
+        temp_file
+            .write_all(json.as_bytes())
+            .expect("Unable to write to temporary file");
+        let parsed_receipt = parse_json_receipt(temp_file.path().to_str().unwrap())?;
+        let output: NativeProofOutput = verify_receipt(&parsed_receipt, &NATIVE_PROOF_ID)?;
+
+        // check that both the original and receovered receipts match
+        assert_eq!(receipt.journal, parsed_receipt.journal);
+        assert_eq!(receipt.seal, parsed_receipt.seal);
+
+        Ok(())
+    }
+}
