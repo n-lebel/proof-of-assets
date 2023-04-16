@@ -13,7 +13,7 @@ rand_core = { version = "0.6.4", features = ["getrandom"] }
 hex = "0.4.3"
 methods = { path = "../methods" }
 # Pull from latest commit is necessary to access RNG within the zkVM (should be fixed in 0.14 release)
-risc0-zkvm = { git = "https://github.com/risc0/risc0.git", rev = "845ff76", default_features = false, features = ["std", "prove"] }
+risc0-zkvm = { version = "0.14.0", default_features = false, features = ["std", "prove"] }
 serde = "1.0"
 proof-core = { path = "../proof-core" }
 prefix-hex = "0.5.0"

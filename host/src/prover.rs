@@ -29,7 +29,7 @@ pub fn prove_assets<T: Request>(request: &T) -> Result<Receipt> {
     println!("Response successfully received.");
     println!("Generating STARK proof of assets...");
 
-    let mut prover = Prover::new(request.get_proof_elf(), request.get_proof_id()).expect(
+    let mut prover = Prover::new(request.get_proof_elf()).expect(
         "Prover should be constructed from valid method source code and corresponding image ID",
     );
     // run_prover runs the verification of the Merkle Patricia proof within the zkVM with the provided prover
