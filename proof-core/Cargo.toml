@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-risc0-zkvm = { git = "https://github.com/risc0/risc0.git", rev = "845ff76", default_features = false, features = ["std"] }
+risc0-zkvm = { version = "0.14.0", default_features = false, features = ["std"] }
 serde = {version = "1.0.155", features = ["derive"] }
 k256 = { version = "0.11.6", features = ["ecdsa", "ecdsa-core", "keccak256"], default_features = false }
 rlp = "0.5.2"

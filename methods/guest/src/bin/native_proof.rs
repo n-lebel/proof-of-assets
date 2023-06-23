@@ -16,7 +16,7 @@ pub fn main() {
 
     // Verify signed message corresponds to provided address
     // NOTE: Naive ECDSA verification is extremely costly, should be replaced by accelerated circuit
-    // as soon as those are made available for Risc0
+    // as soon as those are made available
     verify_signed_message(&input.signature, &input.message, &input.user_address);
 
     // Verify Merkle-Patricia trie proof (accountProof in eth_getProof)
